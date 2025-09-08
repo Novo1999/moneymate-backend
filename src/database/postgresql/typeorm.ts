@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { DataSource, EntityTarget, ObjectLiteral, Repository } from 'typeorm'
 
@@ -12,7 +13,7 @@ export default async function typeORMConnect(): Promise<void> {
     username: process.env.PGSQL_USERNAME,
     password: process.env.PGSQL_PASSWORD,
     database: process.env.PGSQL_DATABASE,
-    entities: [User],
+    entities: [User, Transaction],
     synchronize: true,
   })
 

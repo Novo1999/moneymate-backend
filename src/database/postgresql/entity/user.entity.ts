@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
 @Entity()
 export class User {
@@ -13,4 +14,7 @@ export class User {
 
   @Column()
   password: string
+
+  @OneToMany(() => Transaction, transaction => transaction.user)
+  transactions: Transaction[]
 }
