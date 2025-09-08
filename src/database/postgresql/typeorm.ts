@@ -16,7 +16,7 @@ export default async function typeORMConnect(): Promise<void> {
     synchronize: true,
   })
 
-  await typeORMDB.initialize() // ← Call initialize on the assigned variable
+  await typeORMDB.initialize()
   console.log('DB Connected')
 }
 

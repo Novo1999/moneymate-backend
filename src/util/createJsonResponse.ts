@@ -2,7 +2,7 @@ import { Response } from 'express'
 
 type JsonResponseType<T> = {
   msg: string
-  data: T
+  data?: T
   status: number
 }
 
