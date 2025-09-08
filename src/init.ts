@@ -1,3 +1,5 @@
+import 'reflect-metadata'
+
 import { Express } from 'express'
 import typeORMConnect from 'src/database/postgresql/typeorm'
 

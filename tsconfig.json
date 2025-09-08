@@ -8,8 +8,11 @@
     "moduleResolution": "node",
     "ignoreDeprecations": "6.0",
     "sourceMap": true,
+    "emitDecoratorMetadata": true,
     "outDir": "dist",
     "baseUrl": ".",
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
     "paths": {
       "src/*": ["src/*"],
       "*": ["node_modules/*", "src/types/*"]
