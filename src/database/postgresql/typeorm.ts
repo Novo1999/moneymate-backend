@@ -21,7 +21,7 @@ export default async function typeORMConnect(): Promise<void> {
   console.log('DB Connected')
 }
 
-export function useTypeORM(entity: EntityTarget<ObjectLiteral>): Repository<ObjectLiteral> {
+export function useTypeORM<T extends ObjectLiteral>(entity: EntityTarget<T>): Repository<T> {
   if (!typeORMDB || !typeORMDB.isInitialized) {
     throw new Error('TypeORM has not been initialized!')
   }
