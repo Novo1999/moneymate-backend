@@ -13,7 +13,7 @@ export const getAllTransactions = async (_: Request, res: Response) => {
 
     return createJsonResponse(res, { data: transactions, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error editing transaction', status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, { msg: 'Error editing transaction ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }
 
@@ -43,7 +43,7 @@ export const addTransaction = async (req: Request, res: Response) => {
 
     return createJsonResponse(res, { data: transaction.generatedMaps[0], msg: 'Success', status: StatusCodes.CREATED })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error adding transaction', status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, { msg: 'Error adding transaction ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }
 
@@ -55,7 +55,7 @@ export const editTransaction = async (req: Request, res: Response) => {
 
     return createJsonResponse(res, { data: { affected: transaction.affected }, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error editing transaction', status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, { msg: 'Error editing transaction ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }
 
@@ -67,6 +67,6 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 
     return createJsonResponse(res, { data: { affected: transaction.affected }, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error editing transaction', status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, { msg: 'Error editing transaction ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }

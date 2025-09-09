@@ -56,9 +56,34 @@ export const login = async (req: Request, res: Response) => {
     return createJsonResponse(res, { msg: 'Logged In', data: { token }, status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, {
-      msg: 'Error logging in',
+      msg: 'Error logging in ' + error,
       data: error,
       status: StatusCodes.BAD_REQUEST,
     })
+  }
+}
+
+export const patchUserData = async (req: Request, res: Response) => {
+  try {
+    const dataSource = useTypeORM(User)
+
+    const user = await dataSource.createQueryBuilder().update().set(req.body).where('id = :id', { id: req.params.id }).execute()
+
+    return createJsonResponse(res, { data: { affected: user.affected }, msg: 'Success', status: StatusCodes.OK })
+  } catch (error) {
+    return createJsonResponse(res, { msg: 'Error editing user ' + error, status: StatusCodes.BAD_REQUEST })
+  }
+}
+
+export const getUser = async (req: Request, res: Response) => {
+  try {
+    const dataSource = useTypeORM(User)
+
+    const user = await dataSource.findOneBy({ id: Number(req.params.id) })
+    delete user.password
+
+    return createJsonResponse(res, { data: user, msg: 'Success', status: StatusCodes.OK })
+  } catch (error) {
+    return createJsonResponse(res, { msg: 'Error getting user ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }
