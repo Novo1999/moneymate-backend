@@ -1,4 +1,5 @@
 import { Express, Request, Response, Router } from 'express'
+import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from 'src/controllers/category.controller'
 import { addTransaction, deleteTransaction, editTransaction, getAllTransactions } from 'src/controllers/transaction.controller'
 import { getUser, login, patchUserData, signUp } from 'src/controllers/user.controller'
 import { ExtendedRequest, verifyToken } from 'src/middleware/authMiddleware'
@@ -25,5 +26,16 @@ const transactionRouterSetup = (app: Express) => {
   )
 }
 
-const routers = { routerSetup, transactionRouterSetup, userRouterSetup }
+const categoryRouterSetup = (app: Express) => {
+  app.use(
+    '/api/v1/category',
+    verifyToken,
+    router.get('/:userId', getUserCategories),
+    router.post('/:userId/add', addUserCategory),
+    router.patch('/edit/:categoryId', checkIdExists, editUserCategory),
+    router.delete('/delete/:categoryId', checkIdExists, deleteUserCategory)
+  )
+}
+
+const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup }
 export default routers

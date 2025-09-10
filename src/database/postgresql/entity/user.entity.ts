@@ -1,3 +1,4 @@
+import { Category } from 'src/database/postgresql/entity/category.entity'
 import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { Currency } from 'src/enums/currency'
 import { DayOfWeek } from 'src/enums/week'
@@ -17,11 +18,14 @@ export class User {
   @Column()
   password: string
 
-  @Column({ type: "enum", enum: Currency, default: "USD", nullable: true })
+  @Column({ type: 'enum', enum: Currency, default: 'USD', nullable: true })
   currency: Currency
 
   @OneToMany(() => Transaction, (transaction) => transaction.user, { onDelete: 'CASCADE' })
   transactions: Transaction[]
+
+  @OneToMany(() => Category, (category) => category.user, { onDelete: 'CASCADE' })
+  categories: Category[]
 
   @Column({ enum: DayOfWeek, default: 'Sunday', nullable: true })
   firstDayOfWeek: DayOfWeek
