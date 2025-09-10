@@ -1,3 +1,4 @@
+import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
 import { Category } from 'src/database/postgresql/entity/category.entity'
 import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { Currency } from 'src/enums/currency'
@@ -26,6 +27,9 @@ export class User {
 
   @OneToMany(() => Category, (category) => category.user, { onDelete: 'CASCADE' })
   categories: Category[]
+
+  @OneToMany(() => AccountType, (accountType) => accountType.user, { onDelete: 'CASCADE' })
+  accountTypes: AccountType[]
 
   @Column({ enum: DayOfWeek, default: 'Sunday', nullable: true })
   firstDayOfWeek: DayOfWeek

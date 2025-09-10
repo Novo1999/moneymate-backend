@@ -1,4 +1,5 @@
 import 'reflect-metadata'
+import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
 import { Category } from 'src/database/postgresql/entity/category.entity'
 import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
@@ -14,7 +15,7 @@ export default async function typeORMConnect(): Promise<void> {
     username: process.env.PGSQL_USERNAME,
     password: process.env.PGSQL_PASSWORD,
     database: process.env.PGSQL_DATABASE,
-    entities: [User, Transaction, Category],
+    entities: [User, Transaction, Category, AccountType],
     synchronize: true,
   })
 
