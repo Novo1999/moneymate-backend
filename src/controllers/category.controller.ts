@@ -4,6 +4,7 @@ import { Category } from 'src/database/postgresql/entity/category.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { useTypeORM } from 'src/database/postgresql/typeorm'
 import createJsonResponse from 'src/util/createJsonResponse'
+import { formatDatabaseError } from 'src/util/formatDatabaseError'
 
 export const getUserCategories = async (req: Request, res: Response) => {
   try {
@@ -29,17 +30,16 @@ export const addUserCategory = async (req: Request, res: Response) => {
     const dataSource = useTypeORM(Category)
     const userRepository = useTypeORM(User)
 
-    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.body.userId) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
-
     const categories = await dataSource.createQueryBuilder().insert().into(Category).values(req.body).returning('*').execute()
 
-    return createJsonResponse(res, { data: categories, msg: 'Success', status: StatusCodes.OK })
+    return createJsonResponse(res, { data: categories.generatedMaps[0], msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error adding categories ' + error, status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, { msg: 'Error adding categories ' + formatDatabaseError(error), status: StatusCodes.BAD_REQUEST })
   }
 }
 
@@ -55,7 +55,7 @@ export const editUserCategory = async (req: Request, res: Response) => {
 
     const updatedCategory = await dataSource.createQueryBuilder().update(Category).set(req.body).where({ id: categoryId }).returning('*').execute()
 
-    return createJsonResponse(res, { data: updatedCategory, msg: 'Category updated', status: StatusCodes.OK })
+    return createJsonResponse(res, { data: updatedCategory.generatedMaps[0], msg: 'Category updated', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error updating category ' + error, status: StatusCodes.BAD_REQUEST })
   }

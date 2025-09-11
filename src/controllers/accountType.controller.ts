@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes/build/cjs'
 import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
-import { Category } from 'src/database/postgresql/entity/category.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { useTypeORM } from 'src/database/postgresql/typeorm'
 import createJsonResponse from 'src/util/createJsonResponse'
@@ -30,7 +29,7 @@ export const addUserAccountType = async (req: Request, res: Response) => {
     const dataSource = useTypeORM(AccountType)
     const userRepository = useTypeORM(User)
 
-    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.body.userId) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
@@ -38,7 +37,7 @@ export const addUserAccountType = async (req: Request, res: Response) => {
 
     const accountTypes = await dataSource.createQueryBuilder().insert().into(AccountType).values(req.body).returning('*').execute()
 
-    return createJsonResponse(res, { data: accountTypes, msg: 'Success', status: StatusCodes.OK })
+    return createJsonResponse(res, { data: accountTypes.generatedMaps[0], msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error adding account types ' + error, status: StatusCodes.BAD_REQUEST })
   }
@@ -56,7 +55,7 @@ export const editUserAccountType = async (req: Request, res: Response) => {
 
     const updatedUserAccountType = await dataSource.createQueryBuilder().update(AccountType).set(req.body).where({ id }).returning('*').execute()
 
-    return createJsonResponse(res, { data: updatedUserAccountType, msg: 'Account Type updated', status: StatusCodes.OK })
+    return createJsonResponse(res, { data: updatedUserAccountType.generatedMaps[0], msg: 'Account Type updated', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error updating account type ' + error, status: StatusCodes.BAD_REQUEST })
   }

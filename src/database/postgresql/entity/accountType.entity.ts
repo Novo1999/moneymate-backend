@@ -6,9 +6,9 @@ export class AccountType {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column()
+  @Column({ unique: true })
   name: string
-  
-  @OneToMany(() => User, user => user.accountTypes)
+
+  @OneToMany(() => User, (user) => user.accountTypes)
   user: User
 }
