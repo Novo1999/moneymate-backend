@@ -13,7 +13,8 @@ enum ExpenseCategory {
   COMMUNICATION_PC = 'communication_pc',
   FINANCIAL_EXPENSES = 'financial_expenses',
   INVESTMENTS = 'investments',
-  OTHERS = 'others',
+  OTHERS_EXPENSE = 'others_expense',
+  TRANSFER = 'transfer_income',
 }
 
 enum IncomeCategory {
@@ -27,7 +28,8 @@ enum IncomeCategory {
   LOTTERY = 'lottery',
   GIFTS = 'gifts',
   INTERESTS = 'interests',
-  OTHERS = 'others',
+  OTHERS_INCOME = 'others_income',
+  TRANSFER = 'transfer',
 }
 
 export { ExpenseCategory, IncomeCategory, TransactionType };

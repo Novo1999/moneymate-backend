@@ -10,15 +10,16 @@ import { Between } from 'typeorm'
 
 export const getAllTransactions = async (_: Request, res: Response) => {
   try {
-    const dataSource = useTypeORM(Transaction)
+    const transactionRepository = useTypeORM(Transaction)
 
-    const transactions = (await dataSource.find()).sort((a, b) => a.id - b.id)
+    const transactions = (await transactionRepository.find()).sort((a, b) => a.id - b.id)
 
     return createJsonResponse(res, { data: transactions, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error getting transactions ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }
+
 const betweenDates = (from: string, to: string) => {
   const fromDate = new Date(from)
   const toDate = new Date(to)
@@ -28,7 +29,7 @@ const betweenDates = (from: string, to: string) => {
 
 export const getUserTransactions = async (req: Request, res: Response) => {
   try {
-    const dataSource = useTypeORM(Transaction)
+    const transactionRepository = useTypeORM(Transaction)
     const userRepository = useTypeORM(User)
     const accountTypeRepository = useTypeORM(AccountType)
 
@@ -54,7 +55,7 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       })
     }
 
-    const [transactions, count] = await dataSource.findAndCount({
+    const [transactions, count] = await transactionRepository.findAndCount({
       where: {
         user: { id: user.id },
         createdAt: betweenDates(req.query.from as string, req.query.to as string),
@@ -71,7 +72,7 @@ export const getUserTransactions = async (req: Request, res: Response) => {
 
 export const getUserTransactionsInfo = async (req: Request, res: Response) => {
   try {
-    const dataSource = useTypeORM(Transaction)
+    const transactionRepository = useTypeORM(Transaction)
     const userRepository = useTypeORM(User)
     const accountTypeRepository = useTypeORM(AccountType)
 
@@ -98,7 +99,7 @@ export const getUserTransactionsInfo = async (req: Request, res: Response) => {
     }
 
     // get the balance for each category so in frontend I can show balance and the percentage of amount per category
-    const transactionInfo = await dataSource
+    const transactionInfo = await transactionRepository
       .createQueryBuilder('transaction')
       .leftJoin('transaction.user', 'user')
       .leftJoin('transaction.accountType', 'accountType')
@@ -121,7 +122,7 @@ export const getUserTransactionsInfo = async (req: Request, res: Response) => {
 
 export const addTransaction = async (req: Request, res: Response) => {
   try {
-    const dataSource = useTypeORM(Transaction)
+    const transactionRepository = useTypeORM(Transaction)
     const userRepository = useTypeORM(User)
     const accountTypeRepository = useTypeORM(AccountType)
 
@@ -137,7 +138,7 @@ export const addTransaction = async (req: Request, res: Response) => {
       return createJsonResponse(res, { msg: 'Account type not found', status: StatusCodes.NOT_FOUND })
     }
     const moneyAmount = typeof req.body.money === 'string' ? parseFloat(req.body.money) : req.body.money
-    const transaction = await dataSource
+    const transaction = await transactionRepository
       .createQueryBuilder()
       .insert()
       .into(Transaction)
@@ -166,9 +167,9 @@ export const addTransaction = async (req: Request, res: Response) => {
 
 export const editTransaction = async (req: Request, res: Response) => {
   try {
-    const dataSource = useTypeORM(Transaction)
+    const transactionRepository = useTypeORM(Transaction)
 
-    const transaction = await dataSource.createQueryBuilder().update(Transaction).set(req.body).where('id = :id', { id: req.params.id }).execute()
+    const transaction = await transactionRepository.createQueryBuilder().update(Transaction).set(req.body).where('id = :id', { id: req.params.id }).execute()
 
     if (transaction.affected === 1) return createJsonResponse(res, { data: { affected: transaction.affected }, msg: 'Transaction updated', status: StatusCodes.OK })
   } catch (error) {
@@ -178,9 +179,9 @@ export const editTransaction = async (req: Request, res: Response) => {
 
 export const deleteTransaction = async (req: Request, res: Response) => {
   try {
-    const dataSource = useTypeORM(Transaction)
+    const transactionRepository = useTypeORM(Transaction)
 
-    const transaction = await dataSource.createQueryBuilder().delete().from(Transaction).where('id = :id', { id: req.params.id }).execute()
+    const transaction = await transactionRepository.createQueryBuilder().delete().from(Transaction).where('id = :id', { id: req.params.id }).execute()
 
     return createJsonResponse(res, { data: { affected: transaction.affected }, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {

@@ -30,3 +30,5 @@ export function useTypeORM<T extends ObjectLiteral>(entity: EntityTarget<T>): Re
 
   return typeORMDB.getRepository(entity)
 }
+
+export { typeORMDB }
