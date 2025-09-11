@@ -16,7 +16,7 @@ export const getUserAccountTypes = async (req: Request, res: Response) => {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
 
-    const accountTypes = await dataSource.findOneBy({ user })
+    const accountTypes = await dataSource.findBy({ user })
 
     return createJsonResponse(res, { data: accountTypes, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
@@ -35,7 +35,13 @@ export const addUserAccountType = async (req: Request, res: Response) => {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
 
-    const accountTypes = await dataSource.createQueryBuilder().insert().into(AccountType).values(req.body).returning('*').execute()
+    const accountTypes = await dataSource
+      .createQueryBuilder()
+      .insert()
+      .into(AccountType)
+      .values({ ...req.body, user })
+      .returning('*')
+      .execute()
 
     return createJsonResponse(res, { data: accountTypes.generatedMaps[0], msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
@@ -46,16 +52,16 @@ export const addUserAccountType = async (req: Request, res: Response) => {
 export const editUserAccountType = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(AccountType)
-    const id = Number(req.params.userId)
+    const accountTypeId = Number(req.params.id)
 
-    const accountType = await dataSource.findOneBy({ id })
+    const accountType = await dataSource.findOneBy({ id: accountTypeId })
     if (!accountType) {
       return createJsonResponse(res, { msg: 'Account Type not found', status: StatusCodes.NOT_FOUND })
     }
 
-    const updatedUserAccountType = await dataSource.createQueryBuilder().update(AccountType).set(req.body).where({ id }).returning('*').execute()
+    const updatedUserAccountType = await dataSource.createQueryBuilder().update(AccountType).set(req.body).where({ id: accountTypeId }).returning('*').execute()
 
-    return createJsonResponse(res, { data: updatedUserAccountType.generatedMaps[0], msg: 'Account Type updated', status: StatusCodes.OK })
+    if (updatedUserAccountType.affected === 1) return createJsonResponse(res, { data: updatedUserAccountType.generatedMaps[0], msg: 'Account Type updated', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error updating account type ' + error, status: StatusCodes.BAD_REQUEST })
   }
@@ -64,14 +70,14 @@ export const editUserAccountType = async (req: Request, res: Response) => {
 export const deleteUserAccountType = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(AccountType)
-    const id = Number(req.params.userId)
+    const accountTypeId = Number(req.params.id)
 
-    const accountType = await dataSource.findOneBy({ id })
+    const accountType = await dataSource.findOneBy({ id: accountTypeId })
     if (!accountType) {
       return createJsonResponse(res, { msg: 'Account Type not found', status: StatusCodes.NOT_FOUND })
     }
 
-    await dataSource.createQueryBuilder().delete().from(AccountType).where({ id }).execute()
+    await dataSource.createQueryBuilder().delete().from(AccountType).where({ id: accountTypeId }).execute()
 
     return createJsonResponse(res, { msg: 'Account Type deleted', status: StatusCodes.OK })
   } catch (error) {

@@ -4,7 +4,6 @@ import { Category } from 'src/database/postgresql/entity/category.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { useTypeORM } from 'src/database/postgresql/typeorm'
 import createJsonResponse from 'src/util/createJsonResponse'
-import { formatDatabaseError } from 'src/util/formatDatabaseError'
 
 export const getUserCategories = async (req: Request, res: Response) => {
   try {
@@ -35,18 +34,24 @@ export const addUserCategory = async (req: Request, res: Response) => {
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
-    const categories = await dataSource.createQueryBuilder().insert().into(Category).values(req.body).returning('*').execute()
+    const categories = await dataSource
+      .createQueryBuilder()
+      .insert()
+      .into(Category)
+      .values({ ...req.body, user })
+      .returning('*')
+      .execute()
 
     return createJsonResponse(res, { data: categories.generatedMaps[0], msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error adding categories ' + formatDatabaseError(error), status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, { msg: 'Error adding categories ' + error, status: StatusCodes.BAD_REQUEST })
   }
 }
 
 export const editUserCategory = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(Category)
-    const categoryId = Number(req.params.categoryId)
+    const categoryId = Number(req.params.id)
 
     const category = await dataSource.findOneBy({ id: categoryId })
     if (!category) {
@@ -54,8 +59,7 @@ export const editUserCategory = async (req: Request, res: Response) => {
     }
 
     const updatedCategory = await dataSource.createQueryBuilder().update(Category).set(req.body).where({ id: categoryId }).returning('*').execute()
-
-    return createJsonResponse(res, { data: updatedCategory.generatedMaps[0], msg: 'Category updated', status: StatusCodes.OK })
+    if (updatedCategory.affected === 1) return createJsonResponse(res, { data: updatedCategory.generatedMaps[0], msg: 'Category updated', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error updating category ' + error, status: StatusCodes.BAD_REQUEST })
   }
@@ -64,7 +68,7 @@ export const editUserCategory = async (req: Request, res: Response) => {
 export const deleteUserCategory = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(Category)
-    const categoryId = Number(req.params.categoryId)
+    const categoryId = Number(req.params.id)
 
     const category = await dataSource.findOneBy({ id: categoryId })
     if (!category) {

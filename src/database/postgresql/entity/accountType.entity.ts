@@ -1,14 +1,19 @@
+import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique } from 'typeorm'
 
 @Entity()
+@Unique(['name', 'user'])
 export class AccountType {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ unique: true })
+  @Column()
   name: string
 
-  @OneToMany(() => User, (user) => user.accountTypes)
+  @ManyToOne(() => User, (user) => user.accountTypes)
   user: User
+
+  @OneToMany(() => Transaction, (transaction) => transaction.accountType, { onDelete: 'CASCADE' })
+  transactions: Transaction[]
 }

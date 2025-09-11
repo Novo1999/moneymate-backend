@@ -1,7 +1,7 @@
 import { Express, Request, Response, Router } from 'express'
 import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountTypes } from 'src/controllers/accountType.controller'
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from 'src/controllers/category.controller'
-import { addTransaction, deleteTransaction, editTransaction, getAllTransactions } from 'src/controllers/transaction.controller'
+import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions } from 'src/controllers/transaction.controller'
 import { getUser, login, patchUserData, signUp } from 'src/controllers/user.controller'
 import { ExtendedRequest, verifyToken } from 'src/middleware/authMiddleware'
 import { checkIdExists } from 'src/middleware/validationMiddleware'
@@ -22,6 +22,7 @@ const transactionRouterSetup = (app: Express) => {
     '/api/v1/transaction',
     verifyToken,
     transactionRouter.get('/all', getAllTransactions),
+    transactionRouter.get('/:userId', getUserTransactions),
     transactionRouter.post('/add', addTransaction),
     transactionRouter.patch('/edit/:id', checkIdExists, editTransaction),
     transactionRouter.delete('/delete/:id', checkIdExists, deleteTransaction)
@@ -35,8 +36,8 @@ const categoryRouterSetup = (app: Express) => {
     verifyToken,
     categoryRouter.get('/:userId', getUserCategories),
     categoryRouter.post('/add', addUserCategory),
-    categoryRouter.patch('/edit/:categoryId', checkIdExists, editUserCategory),
-    categoryRouter.delete('/delete/:categoryId', checkIdExists, deleteUserCategory)
+    categoryRouter.patch('/edit/:id', checkIdExists, editUserCategory),
+    categoryRouter.delete('/delete/:id', checkIdExists, deleteUserCategory)
   )
 }
 
@@ -47,8 +48,8 @@ const accountTypeRouterSetup = (app: Express) => {
     verifyToken,
     accountTypeRouter.get('/:userId', getUserAccountTypes),
     accountTypeRouter.post('/add', addUserAccountType),
-    accountTypeRouter.patch('/edit/:categoryId', checkIdExists, editUserAccountType),
-    accountTypeRouter.delete('/delete/:categoryId', checkIdExists, deleteUserAccountType)
+    accountTypeRouter.patch('/edit/:id', checkIdExists, editUserAccountType),
+    accountTypeRouter.delete('/delete/:id', checkIdExists, deleteUserAccountType)
   )
 }
 

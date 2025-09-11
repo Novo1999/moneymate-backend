@@ -1,8 +1,9 @@
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { TransactionType } from 'src/enums/transaction'
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm'
 
 @Entity()
+@Unique(['name', 'user'])
 export class Category {
   @PrimaryGeneratedColumn()
   id: number
