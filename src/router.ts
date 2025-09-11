@@ -1,10 +1,10 @@
 import { Express, Request, Response, Router } from 'express'
 import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountTypes } from 'src/controllers/accountType.controller'
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from 'src/controllers/category.controller'
-import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions } from 'src/controllers/transaction.controller'
+import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from 'src/controllers/transaction.controller'
 import { getUser, login, patchUserData, signUp } from 'src/controllers/user.controller'
 import { ExtendedRequest, verifyToken } from 'src/middleware/authMiddleware'
-import { checkIdExists } from 'src/middleware/validationMiddleware'
+import { checkIdExists, validateGetUserTransactions } from 'src/middleware/validationMiddleware'
 
 const routerSetup = (app: Express) =>
   app.get('/', async (req: ExtendedRequest, res: Response) => {
@@ -22,7 +22,8 @@ const transactionRouterSetup = (app: Express) => {
     '/api/v1/transaction',
     verifyToken,
     transactionRouter.get('/all', getAllTransactions),
-    transactionRouter.get('/:userId', getUserTransactions),
+    transactionRouter.get('/:userId', validateGetUserTransactions, getUserTransactions),
+    transactionRouter.get('/:userId/info', validateGetUserTransactions, getUserTransactionsInfo),
     transactionRouter.post('/add', addTransaction),
     transactionRouter.patch('/edit/:id', checkIdExists, editTransaction),
     transactionRouter.delete('/delete/:id', checkIdExists, deleteTransaction)

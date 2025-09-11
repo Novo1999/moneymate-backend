@@ -30,6 +30,7 @@ export const getUserTransactions = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(Transaction)
     const userRepository = useTypeORM(User)
+    const accountTypeRepository = useTypeORM(AccountType)
 
     const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
 
@@ -37,15 +38,82 @@ export const getUserTransactions = async (req: Request, res: Response) => {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
 
+    const accountType = await accountTypeRepository.findOne({
+      where: { id: Number(req.query.accountTypeId) },
+      relations: ['user'],
+    })
+
+    if (!accountType) {
+      return createJsonResponse(res, { msg: 'Account type not found', status: StatusCodes.NOT_FOUND })
+    }
+
+    if (accountType.user.id !== user.id) {
+      return createJsonResponse(res, {
+        msg: 'Access denied: Account type does not belong to this user',
+        status: StatusCodes.FORBIDDEN,
+      })
+    }
+
     const [transactions, count] = await dataSource.findAndCount({
       where: {
         user: { id: user.id },
         createdAt: betweenDates(req.query.from as string, req.query.to as string),
+        accountType,
       },
       order: { id: 'ASC' },
     })
 
     return createJsonResponse(res, { data: { transactions, count }, msg: 'Success', status: StatusCodes.OK })
+  } catch (error) {
+    return createJsonResponse(res, { msg: 'Error getting transactions ' + error, status: StatusCodes.BAD_REQUEST })
+  }
+}
+
+export const getUserTransactionsInfo = async (req: Request, res: Response) => {
+  try {
+    const dataSource = useTypeORM(Transaction)
+    const userRepository = useTypeORM(User)
+    const accountTypeRepository = useTypeORM(AccountType)
+
+    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+
+    if (!user) {
+      return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
+    }
+
+    const accountType = await accountTypeRepository.findOne({
+      where: { id: Number(req.query.accountTypeId) },
+      relations: ['user'],
+    })
+
+    if (!accountType) {
+      return createJsonResponse(res, { msg: 'Account type not found', status: StatusCodes.NOT_FOUND })
+    }
+
+    if (accountType.user.id !== user.id) {
+      return createJsonResponse(res, {
+        msg: 'Access denied: Account type does not belong to this user',
+        status: StatusCodes.FORBIDDEN,
+      })
+    }
+
+    // get the balance for each category so in frontend I can show balance and the percentage of amount per category
+    const transactionInfo = await dataSource
+      .createQueryBuilder('transaction')
+      .leftJoin('transaction.user', 'user')
+      .leftJoin('transaction.accountType', 'accountType')
+      .where('user.id = :userId', { userId: user.id })
+      .andWhere('accountType.id = :accountTypeId', { accountTypeId: accountType.id })
+      .andWhere('transaction.createdAt BETWEEN :fromDate AND :toDate', {
+        fromDate: new Date(req.query.from as string),
+        toDate: new Date(req.query.to as string),
+      })
+      .select('SUM(transaction.money)', 'balance')
+      .addSelect('category')
+      .groupBy('category')
+      .getRawMany()
+
+    return createJsonResponse(res, { data: transactionInfo, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error getting transactions ' + error, status: StatusCodes.BAD_REQUEST })
   }
@@ -68,14 +136,14 @@ export const addTransaction = async (req: Request, res: Response) => {
     if (!accountType) {
       return createJsonResponse(res, { msg: 'Account type not found', status: StatusCodes.NOT_FOUND })
     }
-
+    const moneyAmount = typeof req.body.money === 'string' ? parseFloat(req.body.money) : req.body.money
     const transaction = await dataSource
       .createQueryBuilder()
       .insert()
       .into(Transaction)
       .values({
         category: req.body.category,
-        money: req.body.money,
+        money: moneyAmount,
         type: req.body.type,
         user: user,
         accountType,
@@ -83,6 +151,12 @@ export const addTransaction = async (req: Request, res: Response) => {
       })
       .returning('*')
       .execute()
+
+    if (accountType.balance !== undefined) {
+      const newBalance = req.body.type === 'income' ? Number(accountType.balance) + moneyAmount : Number(accountType.balance) - moneyAmount
+
+      await accountTypeRepository.update(accountType.id, { balance: newBalance })
+    }
 
     return createJsonResponse(res, { data: transaction.generatedMaps[0], msg: 'Success', status: StatusCodes.CREATED })
   } catch (error) {

@@ -11,9 +11,12 @@ export class AccountType {
   @Column()
   name: string
 
-  @ManyToOne(() => User, (user) => user.accountTypes)
+  @ManyToOne(() => User, (user) => user.accountTypes, { nullable: false })
   user: User
 
   @OneToMany(() => Transaction, (transaction) => transaction.accountType, { onDelete: 'CASCADE' })
   transactions: Transaction[]
+
+  @Column('decimal')
+  balance: number
 }

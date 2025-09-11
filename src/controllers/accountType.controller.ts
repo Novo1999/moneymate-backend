@@ -17,6 +17,7 @@ export const getUserAccountTypes = async (req: Request, res: Response) => {
     }
 
     const accountTypes = await dataSource.findBy({ user })
+    console.log("🚀 ~ getUserAccountTypes ~ accountTypes:", accountTypes)
 
     return createJsonResponse(res, { data: accountTypes, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
