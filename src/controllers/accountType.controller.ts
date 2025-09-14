@@ -3,23 +3,23 @@ import { StatusCodes } from 'http-status-codes/build/cjs'
 import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
 import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
-import typeORMConnect, { typeORMDB, useTypeORM } from 'src/database/postgresql/typeorm'
+import { typeORMDB, useTypeORM } from 'src/database/postgresql/typeorm'
 import { ExpenseCategory, IncomeCategory, TransactionType } from 'src/enums/transaction'
 import createJsonResponse from 'src/util/createJsonResponse'
+import { RequestWithUser } from 'src/util/interfaces'
 
-export const getUserAccountTypes = async (req: Request, res: Response) => {
+export const getUserAccountTypes = async (req: RequestWithUser, res: Response) => {
   try {
     const accountTypeRepository = useTypeORM(AccountType)
     const userRepository = useTypeORM(User)
 
-    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
 
     const accountTypes = await accountTypeRepository.findBy({ user })
-    console.log('🚀 ~ getUserAccountTypes ~ accountTypes:', accountTypes)
 
     return createJsonResponse(res, { data: accountTypes, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
@@ -27,12 +27,12 @@ export const getUserAccountTypes = async (req: Request, res: Response) => {
   }
 }
 
-export const addUserAccountType = async (req: Request, res: Response) => {
+export const addUserAccountType = async (req: RequestWithUser, res: Response) => {
   try {
     const accountTypeRepository = useTypeORM(AccountType)
     const userRepository = useTypeORM(User)
 
-    const user = await userRepository.findOneBy({ id: Number(req.body.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })

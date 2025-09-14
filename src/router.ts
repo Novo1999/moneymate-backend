@@ -13,7 +13,7 @@ const routerSetup = (app: Express) =>
 
 const userRouterSetup = (app: Express) => {
   const userRouter = Router()
-  app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/user/:id', getUser), userRouter.patch('/user/:id', patchUserData))
+  app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/user/:id', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData))
 }
 
 const transactionRouterSetup = (app: Express) => {
@@ -47,7 +47,7 @@ const accountTypeRouterSetup = (app: Express) => {
   app.use(
     '/api/v1/accountType',
     verifyToken,
-    accountTypeRouter.get('/:userId', getUserAccountTypes),
+    accountTypeRouter.get('/', getUserAccountTypes),
     accountTypeRouter.post('/add', addUserAccountType),
     accountTypeRouter.patch('/edit/:id', checkIdExists, editUserAccountType),
     accountTypeRouter.patch('/transfer', transferBalance),
