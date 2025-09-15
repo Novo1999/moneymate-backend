@@ -23,7 +23,7 @@ const transactionRouterSetup = (app: Express) => {
     verifyToken,
     transactionRouter.get('/all', getAllTransactions),
     transactionRouter.get('/:userId', validateGetUserTransactions, getUserTransactions),
-    transactionRouter.get('/:userId/info', validateGetUserTransactions, getUserTransactionsInfo),
+    transactionRouter.get('/info', validateGetUserTransactions, getUserTransactionsInfo),
     transactionRouter.post('/add', addTransaction),
     transactionRouter.patch('/edit/:id', checkIdExists, editTransaction),
     transactionRouter.delete('/delete/:id', checkIdExists, deleteTransaction)

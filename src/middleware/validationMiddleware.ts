@@ -24,8 +24,6 @@ export const checkIdExists = [
 ]
 
 export const validateGetUserTransactions = [
-  param('userId').isInt({ min: 1 }).withMessage('User ID must be a positive integer'),
-
   query('from').notEmpty().withMessage('From date is required').isISO8601().withMessage('From date must be a valid ISO 8601 date'),
 
   query('to')

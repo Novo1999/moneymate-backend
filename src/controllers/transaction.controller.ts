@@ -6,6 +6,7 @@ import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { useTypeORM } from 'src/database/postgresql/typeorm'
 import createJsonResponse from 'src/util/createJsonResponse'
+import { RequestWithUser } from 'src/util/interfaces'
 import { Between } from 'typeorm'
 
 export const getAllTransactions = async (_: Request, res: Response) => {
@@ -27,13 +28,13 @@ const betweenDates = (from: string, to: string) => {
   return Between(fromDate, toDate)
 }
 
-export const getUserTransactions = async (req: Request, res: Response) => {
+export const getUserTransactions = async (req: RequestWithUser, res: Response) => {
   try {
     const transactionRepository = useTypeORM(Transaction)
     const userRepository = useTypeORM(User)
     const accountTypeRepository = useTypeORM(AccountType)
 
-    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
@@ -70,13 +71,13 @@ export const getUserTransactions = async (req: Request, res: Response) => {
   }
 }
 
-export const getUserTransactionsInfo = async (req: Request, res: Response) => {
+export const getUserTransactionsInfo = async (req: RequestWithUser, res: Response) => {
   try {
     const transactionRepository = useTypeORM(Transaction)
     const userRepository = useTypeORM(User)
     const accountTypeRepository = useTypeORM(AccountType)
 
-    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })

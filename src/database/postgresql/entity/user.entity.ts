@@ -36,4 +36,7 @@ export class User {
 
   @Column({ default: 1, nullable: true })
   firstDayOfMonth: number
+
+  @Column({ default: 'day' })
+  viewMode: string
 }
