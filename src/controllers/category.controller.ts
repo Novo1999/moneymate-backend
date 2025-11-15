@@ -4,13 +4,14 @@ import { Category } from 'src/database/postgresql/entity/category.entity'
 import { User } from 'src/database/postgresql/entity/user.entity'
 import { useTypeORM } from 'src/database/postgresql/typeorm'
 import createJsonResponse from 'src/util/createJsonResponse'
+import { RequestWithUser } from 'src/util/interfaces'
 
-export const getUserCategories = async (req: Request, res: Response) => {
+export const getUserCategories = async (req: RequestWithUser, res: Response) => {
   try {
     const dataSource = useTypeORM(Category)
     const userRepository = useTypeORM(User)
 
-    const user = await userRepository.findOneBy({ id: Number(req.params.userId) })
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })

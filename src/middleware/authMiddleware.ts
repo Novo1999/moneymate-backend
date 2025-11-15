@@ -13,7 +13,6 @@ export const verifyToken = (req: ExtendedRequest, res: Response, next: NextFunct
 
   try {
     const verified = jwt.verify(token.split(' ')[1], process.env.JWT_SECRET)
-    console.log("🚀 ~ verifyToken ~ verified:", verified)
     req.user = verified
     next()
   } catch (error) {

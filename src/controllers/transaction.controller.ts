@@ -1,4 +1,4 @@
-import { format } from 'date-fns'
+import { endOfDay, format, startOfDay } from 'date-fns'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes/build/cjs'
 import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
@@ -107,8 +107,8 @@ export const getUserTransactionsInfo = async (req: RequestWithUser, res: Respons
       .where('user.id = :userId', { userId: user.id })
       .andWhere('accountType.id = :accountTypeId', { accountTypeId: accountType.id })
       .andWhere('transaction.createdAt BETWEEN :fromDate AND :toDate', {
-        fromDate: new Date(req.query.from as string),
-        toDate: new Date(req.query.to as string),
+        fromDate: startOfDay(new Date(req.query.from as string)),
+        toDate: endOfDay(new Date(req.query.to as string)),
       })
       .select('SUM(transaction.money)', 'balance')
       .addSelect('category')

@@ -35,7 +35,7 @@ const categoryRouterSetup = (app: Express) => {
   app.use(
     '/api/v1/categories',
     verifyToken,
-    categoryRouter.get('/:userId', getUserCategories),
+    categoryRouter.get('/', getUserCategories),
     categoryRouter.post('/add', addUserCategory),
     categoryRouter.patch('/edit/:id', checkIdExists, editUserCategory),
     categoryRouter.delete('/delete/:id', checkIdExists, deleteUserCategory)

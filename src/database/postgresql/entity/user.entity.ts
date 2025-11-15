@@ -39,4 +39,7 @@ export class User {
 
   @Column({ default: 'day' })
   viewMode: string
+
+  @Column({ nullable: true })
+  activeAccountTypeId: number
 }
