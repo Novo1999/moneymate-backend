@@ -31,6 +31,7 @@ export const getUserAccountType = async (req: RequestWithUser, res: Response) =>
   try {
     const accountTypeRepository = useTypeORM(AccountType)
     const userRepository = useTypeORM(User)
+    const accountTypeId = Number(req.params.id)
 
     const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
@@ -38,7 +39,7 @@ export const getUserAccountType = async (req: RequestWithUser, res: Response) =>
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
 
-    const accountType = await accountTypeRepository.findOneBy({ user })
+    const accountType = await accountTypeRepository.findOneBy({ id: accountTypeId })
 
     return createJsonResponse(res, { data: accountType, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {

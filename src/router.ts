@@ -1,5 +1,5 @@
 import { Express, Request, Response, Router } from 'express'
-import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountTypes, transferBalance } from './controllers/accountType.controller'
+import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountType, getUserAccountTypes, transferBalance } from './controllers/accountType.controller'
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from './controllers/category.controller'
 import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from './controllers/transaction.controller'
 import { getUser, login, patchUserData, signUp } from './controllers/user.controller'
@@ -48,6 +48,7 @@ const accountTypeRouterSetup = (app: Express) => {
     '/api/v1/accountType',
     verifyToken,
     accountTypeRouter.get('/', getUserAccountTypes),
+    accountTypeRouter.get('/:id', getUserAccountType),
     accountTypeRouter.post('/add', addUserAccountType),
     accountTypeRouter.patch('/edit/:id', checkIdExists, editUserAccountType),
     accountTypeRouter.patch('/transfer', transferBalance),
