@@ -27,6 +27,25 @@ export const getUserAccountTypes = async (req: RequestWithUser, res: Response) =
   }
 }
 
+export const getUserAccountType = async (req: RequestWithUser, res: Response) => {
+  try {
+    const accountTypeRepository = useTypeORM(AccountType)
+    const userRepository = useTypeORM(User)
+
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
+
+    if (!user) {
+      return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
+    }
+
+    const accountType = await accountTypeRepository.findOneBy({ user })
+
+    return createJsonResponse(res, { data: accountType, msg: 'Success', status: StatusCodes.OK })
+  } catch (error) {
+    return createJsonResponse(res, { msg: 'Error getting account type ' + error, status: StatusCodes.BAD_REQUEST })
+  }
+}
+
 export const addUserAccountType = async (req: RequestWithUser, res: Response) => {
   try {
     const accountTypeRepository = useTypeORM(AccountType)
