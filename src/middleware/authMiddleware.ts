@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes/build/cjs'
 import jwt, { JwtPayload } from 'jsonwebtoken'
-import createJsonResponse from 'src/util/createJsonResponse'
+import createJsonResponse from '../util/createJsonResponse'
 
 export interface ExtendedRequest extends Request {
   user?: string | JwtPayload

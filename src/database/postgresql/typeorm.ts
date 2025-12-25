@@ -1,9 +1,10 @@
 import 'reflect-metadata'
-import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
-import { Category } from 'src/database/postgresql/entity/category.entity'
-import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
-import { User } from 'src/database/postgresql/entity/user.entity'
+
 import { DataSource, EntityTarget, ObjectLiteral, Repository } from 'typeorm'
+import { AccountType } from './entity/accountType.entity'
+import { Category } from './entity/category.entity'
+import { Transaction } from './entity/transaction.entity'
+import { User } from './entity/user.entity'
 
 let typeORMDB: DataSource
 
@@ -32,3 +33,4 @@ export function useTypeORM<T extends ObjectLiteral>(entity: EntityTarget<T>): Re
 }
 
 export { typeORMDB }
+

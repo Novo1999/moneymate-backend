@@ -1,7 +1,7 @@
 import 'reflect-metadata'
 
 import { Express } from 'express'
-import typeORMConnect from 'src/database/postgresql/typeorm'
+import typeORMConnect from './database/postgresql/typeorm'
 
 const appSetup = async (app: Express) => {
   const APP_PORT = 8000

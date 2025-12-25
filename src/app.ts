@@ -1,8 +1,8 @@
 import dotenv from 'dotenv'
 import express, { Request } from 'express'
 import morgan from 'morgan'
-import routers from 'src/router'
 import appSetup from './init'
+import routers from './router'
 import securitySetup from './security'
 dotenv.config()
 

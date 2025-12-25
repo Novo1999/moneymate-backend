@@ -1,6 +1,7 @@
-import { User } from 'src/database/postgresql/entity/user.entity'
-import { TransactionType } from 'src/enums/transaction'
+
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm'
+import { TransactionType } from '../../../enums/transaction'
+import { User } from './user.entity'
 
 @Entity()
 @Unique(['name', 'user'])

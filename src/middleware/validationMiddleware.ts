@@ -3,7 +3,7 @@ import { param, validationResult } from 'express-validator'
 
 import { body, query } from 'express-validator'
 import { StatusCodes } from 'http-status-codes'
-import createJsonResponse from 'src/util/createJsonResponse'
+import createJsonResponse from '../util/createJsonResponse'
 
 export const checkIdExists = [
   param('id').notEmpty().withMessage('No Id was provided').isNumeric().withMessage('ID must be a number'),

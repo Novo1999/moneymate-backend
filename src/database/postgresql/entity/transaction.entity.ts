@@ -1,7 +1,8 @@
-import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
-import { User } from 'src/database/postgresql/entity/user.entity'
-import { ExpenseCategory, IncomeCategory, TransactionType } from 'src/enums/transaction'
+
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { ExpenseCategory, IncomeCategory, TransactionType } from '../../../enums/transaction'
+import { AccountType } from './accountType.entity'
+import { User } from './user.entity'
 
 @Entity()
 export class Transaction {
