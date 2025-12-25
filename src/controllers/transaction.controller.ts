@@ -1,13 +1,14 @@
 import { endOfDay, format, startOfDay } from 'date-fns'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes/build/cjs'
-import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
-import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
-import { User } from 'src/database/postgresql/entity/user.entity'
-import { useTypeORM } from 'src/database/postgresql/typeorm'
-import createJsonResponse from 'src/util/createJsonResponse'
-import { RequestWithUser } from 'src/util/interfaces'
+
 import { Between } from 'typeorm'
+import { AccountType } from '../database/postgresql/entity/accountType.entity'
+import { Transaction } from '../database/postgresql/entity/transaction.entity'
+import { User } from '../database/postgresql/entity/user.entity'
+import { useTypeORM } from '../database/postgresql/typeorm'
+import createJsonResponse from '../util/createJsonResponse'
+import { RequestWithUser } from '../util/interfaces'
 
 export const getAllTransactions = async (_: Request, res: Response) => {
   try {

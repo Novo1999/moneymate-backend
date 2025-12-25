@@ -1,9 +1,9 @@
-import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
-import { Category } from 'src/database/postgresql/entity/category.entity'
-import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
-import { Currency } from 'src/enums/currency'
-import { DayOfWeek } from 'src/enums/week'
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { Currency } from '../../../enums/currency'
+import { DayOfWeek } from '../../../enums/week'
+import { AccountType } from './accountType.entity'
+import { Category } from './category.entity'
+import { Transaction } from './transaction.entity'
 
 @Entity()
 export class User {

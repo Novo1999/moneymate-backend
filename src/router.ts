@@ -1,10 +1,10 @@
 import { Express, Request, Response, Router } from 'express'
-import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountTypes, transferBalance } from 'src/controllers/accountType.controller'
-import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from 'src/controllers/category.controller'
-import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from 'src/controllers/transaction.controller'
-import { getUser, login, patchUserData, signUp } from 'src/controllers/user.controller'
-import { ExtendedRequest, verifyToken } from 'src/middleware/authMiddleware'
-import { checkIdExists, validateGetUserTransactions } from 'src/middleware/validationMiddleware'
+import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountTypes, transferBalance } from './controllers/accountType.controller'
+import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from './controllers/category.controller'
+import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from './controllers/transaction.controller'
+import { getUser, login, patchUserData, signUp } from './controllers/user.controller'
+import { ExtendedRequest, verifyToken } from './middleware/authMiddleware'
+import { checkIdExists, validateGetUserTransactions } from './middleware/validationMiddleware'
 
 const routerSetup = (app: Express) =>
   app.get('/', async (req: ExtendedRequest, res: Response) => {

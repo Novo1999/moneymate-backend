@@ -1,12 +1,12 @@
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes/build/cjs'
-import { AccountType } from 'src/database/postgresql/entity/accountType.entity'
-import { Transaction } from 'src/database/postgresql/entity/transaction.entity'
-import { User } from 'src/database/postgresql/entity/user.entity'
-import { typeORMDB, useTypeORM } from 'src/database/postgresql/typeorm'
-import { ExpenseCategory, IncomeCategory, TransactionType } from 'src/enums/transaction'
-import createJsonResponse from 'src/util/createJsonResponse'
-import { RequestWithUser } from 'src/util/interfaces'
+import { AccountType } from '../database/postgresql/entity/accountType.entity'
+import { Transaction } from '../database/postgresql/entity/transaction.entity'
+import { User } from '../database/postgresql/entity/user.entity'
+import { typeORMDB, useTypeORM } from '../database/postgresql/typeorm'
+import { ExpenseCategory, IncomeCategory, TransactionType } from '../enums/transaction'
+import createJsonResponse from '../util/createJsonResponse'
+import { RequestWithUser } from '../util/interfaces'
 
 export const getUserAccountTypes = async (req: RequestWithUser, res: Response) => {
   try {

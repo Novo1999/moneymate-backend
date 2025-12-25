@@ -2,9 +2,9 @@ import bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
-import { User } from 'src/database/postgresql/entity/user.entity'
-import { useTypeORM } from 'src/database/postgresql/typeorm'
-import createJsonResponse from 'src/util/createJsonResponse'
+import { User } from '../database/postgresql/entity/user.entity'
+import { useTypeORM } from '../database/postgresql/typeorm'
+import createJsonResponse from '../util/createJsonResponse'
 
 export const signUp = async (req: Request, res: Response) => {
   try {
