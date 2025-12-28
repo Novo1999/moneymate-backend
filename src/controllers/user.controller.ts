@@ -4,17 +4,24 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import { User } from '../database/postgresql/entity/user.entity'
 import { useTypeORM } from '../database/postgresql/typeorm'
+import createErrorResponse from '../util/createErrorResponse'
 import createJsonResponse from '../util/createJsonResponse'
 
 export const signUp = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(User)
 
-    const { name, email, password } = req.body
+    const { name, email, password, currency } = req.body
+
+    const exists = await dataSource.findOneBy({ email })
+
+    if (exists) {
+      throw new Error('An user by this email already exists')
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const newUser = await dataSource.createQueryBuilder().insert().into(User).values({ email, name, password: hashedPassword }).execute()
+    const newUser = await dataSource.createQueryBuilder().insert().into(User).values({ email, name, password: hashedPassword, currency }).execute()
 
     if (!newUser) {
       return createJsonResponse(res, {
@@ -30,10 +37,10 @@ export const signUp = async (req: Request, res: Response) => {
       status: StatusCodes.OK,
     })
   } catch (error) {
-    return createJsonResponse(res, {
-      msg: 'Error creating user',
-      data: error,
+    return createErrorResponse(res, {
+      msg: error instanceof Error ? error.message : 'Error creating user',
       status: StatusCodes.BAD_REQUEST,
+      error,
     })
   }
 }
@@ -53,7 +60,7 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1d' })
 
-    return createJsonResponse(res, { msg: 'Logged In', data: { token }, status: StatusCodes.OK })
+    return createJsonResponse(res, { msg: 'Logged In', data: { token, email: user.email, currency: user.currency }, status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, {
       msg: 'Error logging in ' + error,
