@@ -13,7 +13,9 @@
     "migration:create": "typeorm-ts-node-commonjs migration:create ./src/migration/ManualMigration",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d ./data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./data-source.ts",
-    "migration:show": "typeorm-ts-node-commonjs migration:show -d ./data-source.ts"
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d ./data-source.ts",
+    "seed": "ts-node src/seed.ts",
+    "db:reset": "npm run migration:revert && npm run migration:run && npm run seed"
   },
   "keywords": [],
   "author": "",
