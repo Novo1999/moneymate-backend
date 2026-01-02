@@ -1,4 +1,3 @@
-
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { ExpenseCategory, IncomeCategory, TransactionType } from '../../../enums/transaction'
 import { AccountType } from './accountType.entity'
@@ -19,6 +18,9 @@ export class Transaction {
 
   @Column('decimal')
   money: number
+
+  @Column({ nullable: true })
+  note: string
 
   @Column({ enum: TransactionType, default: TransactionType.INCOME })
   type: TransactionType

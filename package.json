@@ -7,7 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon -r tsconfig-paths/register src/app.ts",
     "build": "tsc",
-    "start": "node -r tsconfig-paths/register dist/app.js"
+    "start": "node -r tsconfig-paths/register dist/app.js",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate ./src/migration/InitialMigration -d ./data-source.ts",
+    "migration:create": "typeorm-ts-node-commonjs migration:create ./src/migration/ManualMigration",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d ./data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d ./data-source.ts",
+    "migration:show": "typeorm-ts-node-commonjs migration:show -d ./data-source.ts"
   },
   "keywords": [],
   "author": "",

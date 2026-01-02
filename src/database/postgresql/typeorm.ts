@@ -17,7 +17,8 @@ export default async function typeORMConnect(): Promise<void> {
     password: process.env.PGSQL_PASSWORD,
     database: process.env.PGSQL_DATABASE,
     entities: [User, Transaction, Category, AccountType],
-    synchronize: true,
+    migrations: ['src/migration/**/*.ts'],
+    synchronize: false,
   })
 
   await typeORMDB.initialize()
