@@ -1,6 +1,7 @@
 import { Express, Request, Response, Router } from 'express'
 import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountType, getUserAccountTypes, transferBalance } from './controllers/accountType.controller'
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from './controllers/category.controller'
+import { refreshAccessToken } from './controllers/refreshToken.controller'
 import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from './controllers/transaction.controller'
 import { getUser, login, patchUserData, signUp } from './controllers/user.controller'
 import { ExtendedRequest, verifyToken } from './middleware/authMiddleware'
@@ -56,5 +57,10 @@ const accountTypeRouterSetup = (app: Express) => {
   )
 }
 
-const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup, accountTypeRouterSetup }
+const refreshTokenRouterSetup = (app: Express) => {
+  const refreshTokenRouter = Router()
+  app.use('/api/v1/refreshToken', verifyToken, refreshTokenRouter.get('/refreshToken', refreshAccessToken))
+}
+
+const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup, accountTypeRouterSetup, refreshTokenRouterSetup }
 export default routers

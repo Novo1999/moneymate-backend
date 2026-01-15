@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
+import { RefreshToken } from '../database/postgresql/entity/refreshtoken.entity'
 import { User } from '../database/postgresql/entity/user.entity'
 import { useTypeORM } from '../database/postgresql/typeorm'
 import createErrorResponse from '../util/createErrorResponse'
@@ -48,6 +49,7 @@ export const signUp = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(User)
+    const refreshTokenDataSource = useTypeORM(RefreshToken)
 
     const { email, password } = req.body
 
@@ -58,9 +60,28 @@ export const login = async (req: Request, res: Response) => {
 
     if (!isPasswordValid) return createJsonResponse(res, { msg: 'Invalid Credentials', status: StatusCodes.UNAUTHORIZED })
 
-    const token = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '1d' })
+    const refreshToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' })
 
-    return createJsonResponse(res, { msg: 'Logged In', data: { token, email: user.email, currency: user.currency }, status: StatusCodes.OK })
+    const accessToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '15m' })
+
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 7)
+    await refreshTokenDataSource.insert({ user, expiresAt, revokedAt: null, token: refreshToken })
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes
+    })
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    })
+
+    return createJsonResponse(res, { msg: 'Logged In', data: { email: user.email, currency: user.currency }, status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, {
       msg: 'Error logging in ' + error,

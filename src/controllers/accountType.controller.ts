@@ -52,7 +52,9 @@ export const addUserAccountType = async (req: RequestWithUser, res: Response) =>
     const accountTypeRepository = useTypeORM(AccountType)
     const userRepository = useTypeORM(User)
 
-    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
+    const userId = req.user.id
+
+    const user = await userRepository.findOneBy({ id: Number(userId) })
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
@@ -64,6 +66,13 @@ export const addUserAccountType = async (req: RequestWithUser, res: Response) =>
       .into(AccountType)
       .values({ ...req.body, user })
       .returning('*')
+      .execute()
+
+    await userRepository
+      .createQueryBuilder()
+      .update()
+      .set({ ...user, activeAccountTypeId: accountTypes.generatedMaps[0]?.id })
+      .where('id = :id', { id: req.params.id })
       .execute()
 
     return createJsonResponse(res, { data: accountTypes.generatedMaps[0], msg: 'Success', status: StatusCodes.OK })
@@ -103,9 +112,10 @@ export const transferBalance = async (req: Request, res: Response) => {
     const accountTypeRepository = queryRunner.manager.getRepository(AccountType)
     const transactionRepository = queryRunner.manager.getRepository(Transaction)
 
-    const senderId = Number(req.body.senderId)
-    const receiverId = Number(req.body.receiverId)
-    const transferAmount = Number(req.body.balance)
+    const senderId = Number(req.body.fromAccountId)
+    const receiverId = Number(req.body.toAccountId)
+    const transferAmount = Number(req.body.amount)
+    const note = req.body.note
 
     if (senderId === receiverId) {
       return createJsonResponse(res, {
@@ -172,6 +182,7 @@ export const transferBalance = async (req: Request, res: Response) => {
       user: cleanUser(senderAccountType.user),
       accountType: senderAccountType,
       createdAt: transferDate,
+      note,
     })
 
     const receiverTransaction = await transactionRepository.save({
@@ -181,6 +192,7 @@ export const transferBalance = async (req: Request, res: Response) => {
       user: cleanUser(receiverAccountType.user),
       accountType: receiverAccountType,
       createdAt: transferDate,
+      note,
     })
 
     await accountTypeRepository.update({ id: senderId }, { balance: newSenderBalance })

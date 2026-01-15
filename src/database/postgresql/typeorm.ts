@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import { DataSource, EntityTarget, ObjectLiteral, Repository } from 'typeorm'
 import { AccountType } from './entity/accountType.entity'
 import { Category } from './entity/category.entity'
+import { RefreshToken } from './entity/refreshtoken.entity'
 import { Transaction } from './entity/transaction.entity'
 import { User } from './entity/user.entity'
 
@@ -16,7 +17,7 @@ export default async function typeORMConnect(): Promise<void> {
     username: process.env.PGSQL_USERNAME,
     password: process.env.PGSQL_PASSWORD,
     database: process.env.PGSQL_DATABASE,
-    entities: [User, Transaction, Category, AccountType],
+    entities: [User, Transaction, Category, AccountType, RefreshToken],
     migrations: ['src/migration/**/*.ts'],
     synchronize: false,
   })
