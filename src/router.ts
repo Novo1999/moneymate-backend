@@ -3,7 +3,7 @@ import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUser
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from './controllers/category.controller'
 import { refreshAccessToken } from './controllers/refreshToken.controller'
 import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from './controllers/transaction.controller'
-import { getUser, login, patchUserData, signUp } from './controllers/user.controller'
+import { getUser, login, logout, patchUserData, signUp } from './controllers/user.controller'
 import { ExtendedRequest, verifyToken } from './middleware/authMiddleware'
 import { checkIdExists, validateGetUserTransactions } from './middleware/validationMiddleware'
 
@@ -14,7 +14,9 @@ const routerSetup = (app: Express) =>
 
 const userRouterSetup = (app: Express) => {
   const userRouter = Router()
-  app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/user/:id', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData))
+  app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/me', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData)),
+    userRouter.post('/logout', logout)
+    userRouter.post('/refreshToken', refreshAccessToken)
 }
 
 const transactionRouterSetup = (app: Express) => {
@@ -57,10 +59,5 @@ const accountTypeRouterSetup = (app: Express) => {
   )
 }
 
-const refreshTokenRouterSetup = (app: Express) => {
-  const refreshTokenRouter = Router()
-  app.use('/api/v1/refreshToken', verifyToken, refreshTokenRouter.get('/refreshToken', refreshAccessToken))
-}
-
-const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup, accountTypeRouterSetup, refreshTokenRouterSetup }
+const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup, accountTypeRouterSetup }
 export default routers

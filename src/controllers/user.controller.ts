@@ -7,6 +7,7 @@ import { User } from '../database/postgresql/entity/user.entity'
 import { useTypeORM } from '../database/postgresql/typeorm'
 import createErrorResponse from '../util/createErrorResponse'
 import createJsonResponse from '../util/createJsonResponse'
+import { RequestWithUser } from '../util/interfaces'
 
 export const signUp = async (req: Request, res: Response) => {
   try {
@@ -81,7 +82,7 @@ export const login = async (req: Request, res: Response) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
 
-    return createJsonResponse(res, { msg: 'Logged In', data: { email: user.email, currency: user.currency }, status: StatusCodes.OK })
+    return createJsonResponse(res, { msg: 'Logged In', data: { email: user.email, currency: user.currency, id: user.id }, status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, {
       msg: 'Error logging in ' + error,
@@ -90,7 +91,44 @@ export const login = async (req: Request, res: Response) => {
     })
   }
 }
+export const logout = async (req: Request, res: Response) => {
+  try {
+    const refreshTokenDataSource = useTypeORM(RefreshToken)
 
+    // Get refresh token from cookie
+    const refreshToken = req.cookies.refreshToken
+
+    if (refreshToken) {
+      // Revoke the refresh token in database
+      await refreshTokenDataSource.update({ token: refreshToken }, { revokedAt: new Date() })
+    }
+
+    // Clear both cookies
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      path: '/',
+    })
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+      path: '/',
+    })
+
+    return createJsonResponse(res, {
+      msg: 'Logged out successfully',
+      status: StatusCodes.OK,
+    })
+  } catch (error) {
+    return createJsonResponse(res, {
+      msg: 'Error logging out',
+      status: StatusCodes.INTERNAL_SERVER_ERROR,
+    })
+  }
+}
 export const patchUserData = async (req: Request, res: Response) => {
   try {
     const dataSource = useTypeORM(User)
@@ -103,15 +141,33 @@ export const patchUserData = async (req: Request, res: Response) => {
   }
 }
 
-export const getUser = async (req: Request, res: Response) => {
+export const getUser = async (req: RequestWithUser, res: Response) => {
   try {
+    const user = req.user
     const dataSource = useTypeORM(User)
 
-    const user = await dataSource.findOneBy({ id: Number(req.params.id) })
-    delete user.password
+    const userData = await dataSource.findOne({
+      where: { id: user.id },
+    })
 
-    return createJsonResponse(res, { data: user, msg: 'Success', status: StatusCodes.OK })
+    if (!userData) {
+      return createJsonResponse(res, {
+        msg: 'User not found',
+        status: StatusCodes.NOT_FOUND,
+      })
+    }
+
+    delete userData.password
+
+    return createJsonResponse(res, {
+      data: userData,
+      msg: 'Success',
+      status: StatusCodes.OK,
+    })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error getting user ' + error, status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, {
+      msg: 'Error getting user',
+      status: StatusCodes.UNAUTHORIZED,
+    })
   }
 }

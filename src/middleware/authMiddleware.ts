@@ -8,14 +8,26 @@ export interface ExtendedRequest extends Request {
 }
 
 export const verifyToken = (req: ExtendedRequest, res: Response, next: NextFunction) => {
-  const token = req.header('Authorization')
-  if (!token) return createJsonResponse(res, { msg: 'Access Denied', status: StatusCodes.UNAUTHORIZED })
+  // Get token from cookies instead of header
+  const token = req.cookies.accessToken
+  console.log("🚀 ~ verifyToken ~ token:", token)
+  
+  if (!token) {
+    return createJsonResponse(res, { 
+      msg: 'Access Denied', 
+      status: StatusCodes.UNAUTHORIZED 
+    })
+  }
 
   try {
-    const verified = jwt.verify(token.split(' ')[1], process.env.JWT_SECRET)
+    // No need to split - cookie value is just the token
+    const verified = jwt.verify(token, process.env.JWT_SECRET)
     req.user = verified
     next()
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Invalid Token', status: StatusCodes.UNAUTHORIZED })
+    return createJsonResponse(res, { 
+      msg: 'Invalid Token', 
+      status: StatusCodes.UNAUTHORIZED 
+    })
   }
 }
