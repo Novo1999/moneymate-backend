@@ -40,6 +40,9 @@ export class User {
   @Column({ default: 'day' })
   viewMode: string
 
+  @Column('simple-json', { nullable: true })
+  interval: { from: Date; to: Date }
+
   @Column({ nullable: true })
   activeAccountTypeId: number
 }

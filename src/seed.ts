@@ -46,6 +46,7 @@ async function seed() {
       firstDayOfWeek: DayOfWeek.MONDAY,
       firstDayOfMonth: 1,
       viewMode: 'day',
+      interval: null,
     })
 
     const user2 = userRepo.create({
@@ -56,6 +57,7 @@ async function seed() {
       firstDayOfWeek: DayOfWeek.SUNDAY,
       firstDayOfMonth: 1,
       viewMode: 'week',
+      interval: null,
     })
 
     await userRepo.save([user1, user2])

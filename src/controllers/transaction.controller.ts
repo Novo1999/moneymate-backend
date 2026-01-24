@@ -151,7 +151,7 @@ export const addTransaction = async (req: Request, res: Response) => {
         user: user,
         accountType,
         createdAt: req.body.createdAt,
-        // note: req.body.note,
+        note: req.body.note,
       })
       .returning('*')
       .execute()
