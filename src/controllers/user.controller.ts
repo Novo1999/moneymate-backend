@@ -59,7 +59,7 @@ export const login = async (req: Request, res: Response) => {
     if (!user) createJsonResponse(res, { msg: 'Invalid Credentials', status: StatusCodes.UNAUTHORIZED })
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
-    if (!isPasswordValid) return createJsonResponse(res, { msg: 'Invalid Credentials', status: StatusCodes.UNAUTHORIZED })
+    if (!isPasswordValid) return createJsonResponse(res, { msg: 'Please Enter Correct Password.', status: StatusCodes.BAD_REQUEST })
 
     const refreshToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' })
 
