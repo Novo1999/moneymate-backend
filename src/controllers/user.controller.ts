@@ -56,7 +56,7 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await dataSource.createQueryBuilder('user').where('user.email = :email', { email }).getOne()
 
-    if (!user) createJsonResponse(res, { msg: 'Invalid Credentials', status: StatusCodes.UNAUTHORIZED })
+    if (!user) return createJsonResponse(res, { msg: 'Invalid Credentials', status: StatusCodes.UNAUTHORIZED })
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) return createJsonResponse(res, { msg: 'Please Enter Correct Password.', status: StatusCodes.BAD_REQUEST })
@@ -71,13 +71,13 @@ export const login = async (req: Request, res: Response) => {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'none',
       maxAge: 15 * 60 * 1000, // 15 minutes
     })
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })

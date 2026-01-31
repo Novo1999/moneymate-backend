@@ -14,7 +14,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     if (!oldRefreshToken) {
       return createJsonResponse(res, {
         msg: 'No refresh token provided',
-        status: StatusCodes.UNAUTHORIZED,
+        status: StatusCodes.BAD_REQUEST,
       })
     }
 
@@ -27,7 +27,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     if (refreshToken.revokedAt !== null) {
       return createJsonResponse(res, {
         msg: 'Refresh token has been revoked',
-        status: StatusCodes.UNAUTHORIZED,
+        status: StatusCodes.BAD_REQUEST,
       })
     }
 
@@ -35,7 +35,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     if (refreshToken.expiresAt < new Date()) {
       return createJsonResponse(res, {
         msg: 'Refresh token expired',
-        status: StatusCodes.UNAUTHORIZED,
+        status: StatusCodes.BAD_REQUEST,
       })
     }
 
@@ -98,7 +98,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   } catch (error) {
     return createJsonResponse(res, {
       msg: 'Invalid refresh token',
-      status: StatusCodes.UNAUTHORIZED,
+      status: StatusCodes.BAD_REQUEST,
     })
   }
 }
