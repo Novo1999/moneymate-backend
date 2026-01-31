@@ -94,9 +94,8 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const refreshTokenDataSource = useTypeORM(RefreshToken)
 
-    // Get refresh token from Authorization header instead
-    const authHeader = req.headers.authorization
-    const refreshToken = authHeader?.split(' ')[1] // Bearer <token>
+    // Get refresh token from request body
+    const refreshToken = req.body.refreshToken
 
     if (refreshToken) {
       // Revoke the refresh token in database
