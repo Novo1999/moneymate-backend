@@ -57,6 +57,7 @@ export const login = async (req: Request, res: Response) => {
     const user = await dataSource.createQueryBuilder('user').where('user.email = :email', { email }).getOne()
 
     if (!user) return createJsonResponse(res, { msg: 'Invalid Credentials', status: StatusCodes.UNAUTHORIZED })
+
     const isPasswordValid = await bcrypt.compare(password, user.password)
 
     if (!isPasswordValid) return createJsonResponse(res, { msg: 'Please Enter Correct Password.', status: StatusCodes.BAD_REQUEST })
@@ -69,20 +70,18 @@ export const login = async (req: Request, res: Response) => {
     expiresAt.setDate(expiresAt.getDate() + 7)
     await refreshTokenDataSource.insert({ user, expiresAt, revokedAt: null, token: refreshToken })
 
-    res.cookie('accessToken', accessToken, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      sameSite: 'none',
+    // Send tokens in response body instead of cookies
+    return createJsonResponse(res, {
+      msg: 'Logged In',
+      data: {
+        email: user.email,
+        currency: user.currency,
+        id: user.id,
+        accessToken,
+        refreshToken,
+      },
+      status: StatusCodes.OK,
     })
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'none',
-    })
-
-    return createJsonResponse(res, { msg: 'Logged In', data: { email: user.email, currency: user.currency, id: user.id }, status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, {
       msg: 'Error logging in ' + error,
@@ -95,26 +94,14 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const refreshTokenDataSource = useTypeORM(RefreshToken)
 
-    // Get refresh token from cookie
-    const refreshToken = req.cookies.refreshToken
+    // Get refresh token from Authorization header instead
+    const authHeader = req.headers.authorization
+    const refreshToken = authHeader?.split(' ')[1] // Bearer <token>
 
     if (refreshToken) {
       // Revoke the refresh token in database
       await refreshTokenDataSource.update({ token: refreshToken }, { revokedAt: new Date() })
     }
-
-    // Clear both cookies
-    res.clearCookie('accessToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-    })
-
-    res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-    })
 
     return createJsonResponse(res, {
       msg: 'Logged out successfully',

@@ -9,8 +9,8 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   try {
     const refreshTokenDataSource = useTypeORM(RefreshToken)
 
-    // Step 1: Get refresh token from cookie
-    const oldRefreshToken = req.cookies.refreshToken
+    // Step 1: Get refresh token from request body instead of cookie
+    const oldRefreshToken = req.body.refreshToken
     if (!oldRefreshToken) {
       return createJsonResponse(res, {
         msg: 'No refresh token provided',
@@ -22,6 +22,13 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       where: { token: oldRefreshToken },
       relations: ['user'],
     })
+
+    if (!refreshToken) {
+      return createJsonResponse(res, {
+        msg: 'Invalid refresh token',
+        status: StatusCodes.BAD_REQUEST,
+      })
+    }
 
     // Check if token is revoked
     if (refreshToken.revokedAt !== null) {
@@ -58,6 +65,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       { expiresIn: '7d' },
     )
 
+    // Revoke old refresh token
     await refreshTokenDataSource.update(
       {
         id: refreshToken.id,
@@ -70,6 +78,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
 
+    // Save new refresh token
     await refreshTokenDataSource.insert({
       user: refreshToken.user,
       token: newRefreshToken,
@@ -77,22 +86,13 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       revokedAt: null,
     })
 
-    res.cookie('accessToken', newAccessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 15 * 60 * 1000, // 15 minutes
-      sameSite: 'none',
-    })
-
-    res.cookie('refreshToken', newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'none',
-    })
-
+    // Return tokens in response body
     return createJsonResponse(res, {
       msg: 'Token Refreshed',
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
       status: StatusCodes.OK,
     })
   } catch (error) {

@@ -8,26 +8,34 @@ export interface ExtendedRequest extends Request {
 }
 
 export const verifyToken = (req: ExtendedRequest, res: Response, next: NextFunction) => {
-  // Get token from cookies instead of header
-  const token = req.cookies.accessToken
-  console.log("🚀 ~ verifyToken ~ token:", token)
-  
+  // Get token from Authorization header
+  const authHeader = req.headers.authorization
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return createJsonResponse(res, {
+      msg: 'Access Denied - No token provided',
+      status: StatusCodes.UNAUTHORIZED,
+    })
+  }
+
+  // Extract token after "Bearer "
+  const token = authHeader.split(' ')[1]
+
   if (!token) {
-    return createJsonResponse(res, { 
-      msg: 'Access Denied', 
-      status: StatusCodes.UNAUTHORIZED 
+    return createJsonResponse(res, {
+      msg: 'Access Denied - Invalid token format',
+      status: StatusCodes.UNAUTHORIZED,
     })
   }
 
   try {
-    // No need to split - cookie value is just the token
     const verified = jwt.verify(token, process.env.JWT_SECRET)
     req.user = verified
     next()
   } catch (error) {
-    return createJsonResponse(res, { 
-      msg: 'Invalid Token', 
-      status: StatusCodes.UNAUTHORIZED 
+    return createJsonResponse(res, {
+      msg: 'Invalid Token',
+      status: StatusCodes.UNAUTHORIZED,
     })
   }
 }
