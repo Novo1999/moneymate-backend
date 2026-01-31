@@ -18,7 +18,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       })
     }
 
-     const refreshToken = await refreshTokenDataSource.findOne({
+    const refreshToken = await refreshTokenDataSource.findOne({
       where: { token: oldRefreshToken },
       relations: ['user'],
     })
@@ -46,7 +46,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         name: refreshToken.user.name,
       },
       process.env.JWT_SECRET,
-      { expiresIn: '15m' }
+      { expiresIn: '15m' },
     )
     const newRefreshToken = jwt.sign(
       {
@@ -55,7 +55,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         name: refreshToken.user.name,
       },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '7d' },
     )
 
     await refreshTokenDataSource.update(
@@ -64,7 +64,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       },
       {
         revokedAt: new Date(),
-      }
+      },
     )
 
     const expiresAt = new Date()
@@ -80,14 +80,12 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
     res.cookie('accessToken', newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
       maxAge: 15 * 60 * 1000, // 15 minutes
     })
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
 
