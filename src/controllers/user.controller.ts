@@ -73,13 +73,13 @@ export const login = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: true,
       maxAge: 15 * 60 * 1000, // 15 minutes
-      domain: 'https://moneymate-frontend-one.vercel.app/',
+      sameSite: 'none',
     })
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      domain: 'https://moneymate-frontend-one.vercel.app/',
+      sameSite: 'none',
     })
 
     return createJsonResponse(res, { msg: 'Logged In', data: { email: user.email, currency: user.currency, id: user.id }, status: StatusCodes.OK })

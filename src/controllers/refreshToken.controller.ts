@@ -81,14 +81,14 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 15 * 60 * 1000, // 15 minutes
-      domain: 'https://moneymate-frontend-one.vercel.app/',
+      sameSite: 'none',
     })
 
     res.cookie('refreshToken', newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      domain: 'https://moneymate-frontend-one.vercel.app/',
+      sameSite: 'none',
     })
 
     return createJsonResponse(res, {
