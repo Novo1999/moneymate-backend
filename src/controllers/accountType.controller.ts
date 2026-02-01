@@ -39,7 +39,14 @@ export const getUserAccountType = async (req: RequestWithUser, res: Response) =>
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
     }
 
-    const accountType = await accountTypeRepository.findOneBy({ id: accountTypeId })
+    const accountType = await accountTypeRepository.findOne({
+      where: {
+        id: accountTypeId,
+      },
+      relations: {
+        user: true,
+      },
+    })
 
     if (accountType.user.id !== req.user.id) {
       return createJsonResponse(res, {

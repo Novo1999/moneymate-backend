@@ -8,7 +8,6 @@ export interface ExtendedRequest extends Request {
 }
 
 export const verifyToken = (req: ExtendedRequest, res: Response, next: NextFunction) => {
-  // Get token from Authorization header
   const authHeader = req.headers.authorization
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -18,7 +17,6 @@ export const verifyToken = (req: ExtendedRequest, res: Response, next: NextFunct
     })
   }
 
-  // Extract token after "Bearer "
   const token = authHeader.split(' ')[1]
 
   if (!token) {
