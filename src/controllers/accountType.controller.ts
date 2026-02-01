@@ -41,6 +41,13 @@ export const getUserAccountType = async (req: RequestWithUser, res: Response) =>
 
     const accountType = await accountTypeRepository.findOneBy({ id: accountTypeId })
 
+    if (accountType.user.id !== req.user.id) {
+      return createJsonResponse(res, {
+        msg: 'Access denied: Account type does not belong to this user',
+        status: StatusCodes.FORBIDDEN,
+      })
+    }
+
     return createJsonResponse(res, { data: accountType, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error getting account type ' + error, status: StatusCodes.BAD_REQUEST })
