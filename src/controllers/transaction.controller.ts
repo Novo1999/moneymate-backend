@@ -107,7 +107,7 @@ export const getUserTransactionsPaginated = async (req: RequestWithUser, res: Re
       })
     }
 
-    const transactions = await transactionRepository.find({
+    const [transactions, count] = await transactionRepository.findAndCount({
       where: {
         user: { id: user.id },
         accountType,
@@ -121,7 +121,7 @@ export const getUserTransactionsPaginated = async (req: RequestWithUser, res: Re
     const data = hasNextPage ? transactions.slice(0, limit) : transactions
     const nextCursor = hasNextPage ? data[data.length - 1].id : null
 
-    return createJsonResponse(res, { data: { transactions: data, nextCursor }, msg: 'Success', status: StatusCodes.OK })
+    return createJsonResponse(res, { data: { transactions: data, nextCursor, count }, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error getting transactions ' + error, status: StatusCodes.BAD_REQUEST })
   }
@@ -226,12 +226,65 @@ export const addTransaction = async (req: Request, res: Response) => {
 export const editTransaction = async (req: Request, res: Response) => {
   try {
     const transactionRepository = useTypeORM(Transaction)
+    const accountTypeRepository = useTypeORM(AccountType)
 
-    const transaction = await transactionRepository.createQueryBuilder().update(Transaction).set(req.body).where('id = :id', { id: req.params.id }).execute()
+    const transactionId = Number(req.params.id)
 
-    if (transaction.affected === 1) return createJsonResponse(res, { data: { affected: transaction.affected }, msg: 'Transaction updated', status: StatusCodes.OK })
+    const existingTransaction = await transactionRepository.findOne({
+      where: { id: transactionId },
+      relations: ['accountType'],
+    })
+
+    if (!existingTransaction) {
+      return createJsonResponse(res, {
+        msg: 'Transaction not found',
+        status: StatusCodes.NOT_FOUND,
+      })
+    }
+
+    const oldAmount = Number(existingTransaction.money)
+    const oldType = existingTransaction.type
+    const accountType = existingTransaction.accountType
+
+    const newAmount = typeof req.body.money === 'string' ? Number(req.body.money) : (req.body.money ?? oldAmount)
+
+    const newType = req.body.type ?? oldType
+
+    let balanceDelta = 0
+
+    // remove old transaction effect
+    if (oldType === 'income') {
+      balanceDelta -= oldAmount
+    } else {
+      balanceDelta += oldAmount
+    }
+
+    // apply new transaction effect
+    if (newType === 'income') {
+      balanceDelta += newAmount
+    } else {
+      balanceDelta -= newAmount
+    }
+
+    await transactionRepository.update(transactionId, {
+      ...req.body,
+      money: newAmount,
+      type: newType,
+    })
+
+    await accountTypeRepository.update(accountType.id, {
+      balance: Number(accountType.balance) + balanceDelta,
+    })
+
+    return createJsonResponse(res, {
+      msg: 'Transaction updated',
+      status: StatusCodes.OK,
+    })
   } catch (error) {
-    return createJsonResponse(res, { msg: 'Error editing transaction ' + error, status: StatusCodes.BAD_REQUEST })
+    return createJsonResponse(res, {
+      msg: 'Error editing transaction ' + error,
+      status: StatusCodes.BAD_REQUEST,
+    })
   }
 }
 
