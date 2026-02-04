@@ -1,8 +1,8 @@
-import { endOfDay, format, startOfDay } from 'date-fns'
+import { endOfDay, startOfDay } from 'date-fns'
 import { Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes/build/cjs'
 
-import { Between } from 'typeorm'
+import { Between, LessThan } from 'typeorm'
 import { AccountType } from '../database/postgresql/entity/accountType.entity'
 import { Transaction } from '../database/postgresql/entity/transaction.entity'
 import { User } from '../database/postgresql/entity/user.entity'
@@ -67,6 +67,61 @@ export const getUserTransactions = async (req: RequestWithUser, res: Response) =
     })
 
     return createJsonResponse(res, { data: { transactions, count }, msg: 'Success', status: StatusCodes.OK })
+  } catch (error) {
+    return createJsonResponse(res, { msg: 'Error getting transactions ' + error, status: StatusCodes.BAD_REQUEST })
+  }
+}
+
+export const getUserTransactionsPaginated = async (req: RequestWithUser, res: Response) => {
+  try {
+    const transactionRepository = useTypeORM(Transaction)
+    const userRepository = useTypeORM(User)
+    const accountTypeRepository = useTypeORM(AccountType)
+
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
+
+    const { limit, cursor, accountTypeId } = Object.assign({}, { limit: Math.min(Number(req.query.limit) || 20, 50), cursor: Number(req.query.cursor), accountTypeId: Number(req.query.accountTypeId) })
+
+    console.log({ limit, cursor, accountTypeId })
+
+    if (!user) {
+      return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
+    }
+
+    const accountType = await accountTypeRepository.findOne({
+      where: { id: accountTypeId },
+      relations: ['user'],
+    })
+
+    if (!accountType) {
+      return createJsonResponse(res, {
+        msg: 'Account type not found',
+        status: StatusCodes.NOT_FOUND,
+      })
+    }
+
+    if (accountType.user.id !== user.id) {
+      return createJsonResponse(res, {
+        msg: 'Access denied: Account type does not belong to this user',
+        status: StatusCodes.FORBIDDEN,
+      })
+    }
+
+    const transactions = await transactionRepository.find({
+      where: {
+        user: { id: user.id },
+        accountType,
+        ...(cursor ? { id: LessThan(cursor) } : {}),
+      },
+      take: limit + 1,
+      order: { id: 'DESC' },
+    })
+
+    const hasNextPage = transactions.length > limit
+    const data = hasNextPage ? transactions.slice(0, limit) : transactions
+    const nextCursor = hasNextPage ? data[data.length - 1].id : null
+
+    return createJsonResponse(res, { data: { transactions: data, nextCursor }, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error getting transactions ' + error, status: StatusCodes.BAD_REQUEST })
   }

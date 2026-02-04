@@ -2,7 +2,15 @@ import { Express, Request, Response, Router } from 'express'
 import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountType, getUserAccountTypes, transferBalance } from './controllers/accountType.controller'
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from './controllers/category.controller'
 import { refreshAccessToken } from './controllers/refreshToken.controller'
-import { addTransaction, deleteTransaction, editTransaction, getAllTransactions, getUserTransactions, getUserTransactionsInfo } from './controllers/transaction.controller'
+import {
+  addTransaction,
+  deleteTransaction,
+  editTransaction,
+  getAllTransactions,
+  getUserTransactions,
+  getUserTransactionsInfo,
+  getUserTransactionsPaginated,
+} from './controllers/transaction.controller'
 import { getUser, login, logout, patchUserData, signUp } from './controllers/user.controller'
 import { ExtendedRequest, verifyToken } from './middleware/authMiddleware'
 import { checkIdExists, validateGetUserTransactions } from './middleware/validationMiddleware'
@@ -14,9 +22,9 @@ const routerSetup = (app: Express) =>
 
 const userRouterSetup = (app: Express) => {
   const userRouter = Router()
-  app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/me', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData)),
-    userRouter.post('/logout', logout)
-    userRouter.post('/refreshToken', refreshAccessToken)
+  ;(app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/me', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData)),
+    userRouter.post('/logout', logout))
+  userRouter.post('/refreshToken', refreshAccessToken)
 }
 
 const transactionRouterSetup = (app: Express) => {
@@ -25,11 +33,12 @@ const transactionRouterSetup = (app: Express) => {
     '/api/v1/transaction',
     verifyToken,
     transactionRouter.get('/all', getAllTransactions),
+    transactionRouter.get('/paginated', getUserTransactionsPaginated),
     transactionRouter.get('/:userId', validateGetUserTransactions, getUserTransactions),
     transactionRouter.get('/info', validateGetUserTransactions, getUserTransactionsInfo),
     transactionRouter.post('/add', addTransaction),
     transactionRouter.patch('/edit/:id', checkIdExists, editTransaction),
-    transactionRouter.delete('/delete/:id', checkIdExists, deleteTransaction)
+    transactionRouter.delete('/delete/:id', checkIdExists, deleteTransaction),
   )
 }
 
@@ -41,7 +50,7 @@ const categoryRouterSetup = (app: Express) => {
     categoryRouter.get('/', getUserCategories),
     categoryRouter.post('/add', addUserCategory),
     categoryRouter.patch('/edit/:id', checkIdExists, editUserCategory),
-    categoryRouter.delete('/delete/:id', checkIdExists, deleteUserCategory)
+    categoryRouter.delete('/delete/:id', checkIdExists, deleteUserCategory),
   )
 }
 
@@ -55,7 +64,7 @@ const accountTypeRouterSetup = (app: Express) => {
     accountTypeRouter.post('/add', addUserAccountType),
     accountTypeRouter.patch('/edit/:id', checkIdExists, editUserAccountType),
     accountTypeRouter.patch('/transfer', transferBalance),
-    accountTypeRouter.delete('/delete/:id', checkIdExists, deleteUserAccountType)
+    accountTypeRouter.delete('/delete/:id', checkIdExists, deleteUserAccountType),
   )
 }
 
