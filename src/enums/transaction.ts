@@ -14,7 +14,7 @@ enum ExpenseCategory {
   FINANCIAL_EXPENSES = 'financial_expenses',
   INVESTMENTS = 'investments',
   OTHERS_EXPENSE = 'others_expense',
-  TRANSFER = 'transfer_income',
+  TRANSFER = 'transfer',
 }
 
 enum IncomeCategory {

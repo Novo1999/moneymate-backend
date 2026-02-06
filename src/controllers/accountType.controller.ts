@@ -48,7 +48,7 @@ export const getUserAccountType = async (req: RequestWithUser, res: Response) =>
       },
     })
 
-    if (accountType.user.id !== req.user.id) {
+    if (accountType?.user.id !== req.user.id) {
       return createJsonResponse(res, {
         msg: 'Access denied: Account type does not belong to this user',
         status: StatusCodes.FORBIDDEN,
@@ -114,8 +114,8 @@ export const editUserAccountType = async (req: Request, res: Response) => {
 }
 
 const cleanUser = (user: User) => {
-  delete user.password
-  return user
+  const { password, ...rest } = user
+  return rest
 }
 export const transferBalance = async (req: Request, res: Response) => {
   const queryRunner = typeORMDB.createQueryRunner()
@@ -229,7 +229,7 @@ export const transferBalance = async (req: Request, res: Response) => {
     await queryRunner.rollbackTransaction()
 
     return createJsonResponse(res, {
-      msg: error,
+      msg: error as string,
       status: StatusCodes.BAD_REQUEST,
     })
   } finally {
