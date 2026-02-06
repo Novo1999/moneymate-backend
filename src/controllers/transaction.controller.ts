@@ -7,6 +7,7 @@ import { AccountType } from '../database/postgresql/entity/accountType.entity'
 import { Transaction } from '../database/postgresql/entity/transaction.entity'
 import { User } from '../database/postgresql/entity/user.entity'
 import { useTypeORM } from '../database/postgresql/typeorm'
+import { ExpenseCategory, IncomeCategory, TransactionType } from '../enums/transaction'
 import createJsonResponse from '../util/createJsonResponse'
 import { RequestWithUser } from '../util/interfaces'
 
@@ -80,9 +81,17 @@ export const getUserTransactionsPaginated = async (req: RequestWithUser, res: Re
 
     const user = await userRepository.findOneBy({ id: Number(req.user.id) })
 
-    const { limit, cursor, accountTypeId } = Object.assign({}, { limit: Math.min(Number(req.query.limit) || 20, 50), cursor: Number(req.query.cursor), accountTypeId: Number(req.query.accountTypeId) })
-
-    console.log({ limit, cursor, accountTypeId })
+    const { limit, cursor, accountTypeId, minMoney, maxMoney } = Object.assign(
+      {},
+      {
+        limit: Math.min(Number(req.query.limit) || 20, 50),
+        cursor: Number(req.query.cursor),
+        accountTypeId: Number(req.query.accountTypeId),
+        minMoney: Number(req.query.minMoney),
+        maxMoney: Number(req.query.maxMoney),
+      },
+    )
+    const { category, type } = req.query
 
     if (!user) {
       return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
@@ -111,6 +120,9 @@ export const getUserTransactionsPaginated = async (req: RequestWithUser, res: Re
       where: {
         user: { id: user.id },
         accountType,
+        category: category as IncomeCategory | ExpenseCategory,
+        type: type as TransactionType,
+        ...(minMoney && maxMoney ? { money: Between(minMoney, maxMoney) } : {}),
         ...(cursor ? { id: LessThan(cursor) } : {}),
       },
       take: limit + 1,
@@ -297,5 +309,40 @@ export const deleteTransaction = async (req: Request, res: Response) => {
     return createJsonResponse(res, { data: { affected: transaction.affected }, msg: 'Success', status: StatusCodes.OK })
   } catch (error) {
     return createJsonResponse(res, { msg: 'Error editing transaction ' + error, status: StatusCodes.BAD_REQUEST })
+  }
+}
+
+export const getMaxTransactionAmountRange = async (req: RequestWithUser, res: Response) => {
+  try {
+    const transactionRepository = useTypeORM(Transaction)
+    const userRepository = useTypeORM(User)
+
+    const user = await userRepository.findOneBy({ id: Number(req.user.id) })
+
+    if (!user) {
+      return createJsonResponse(res, { msg: 'User not found', status: StatusCodes.NOT_FOUND })
+    }
+
+    const result = await transactionRepository
+      .createQueryBuilder('t')
+      .select('MAX(t.money)', 'maxAmount')
+      .where('t.userId = :userId', { userId: user?.id })
+      .andWhere('t.accountTypeId = :accountTypeId', { accountTypeId: Number(req.query.accountTypeId) })
+      .getRawOne()
+
+    const maxAmount = result?.maxAmount || 0
+
+    const ceilingAmount = Math.ceil(maxAmount / 1000) * 1000
+
+    return createJsonResponse(res, {
+      data: { maxAmount: ceilingAmount || 0 },
+      msg: 'Success',
+      status: StatusCodes.OK,
+    })
+  } catch (error) {
+    return createJsonResponse(res, {
+      msg: 'Error getting max transaction: ' + error,
+      status: StatusCodes.BAD_REQUEST,
+    })
   }
 }
