@@ -5,8 +5,6 @@ import { Category } from './src/database/postgresql/entity/category.entity'
 import { Transaction } from './src/database/postgresql/entity/transaction.entity'
 import { User } from './src/database/postgresql/entity/user.entity'
 
-
-
 config()
 
 export const AppDataSource = new DataSource({
@@ -18,6 +16,7 @@ export const AppDataSource = new DataSource({
   database: process.env.PGSQL_DATABASE,
   entities: [User, Transaction, Category, AccountType],
   migrations: ['./src/migration/**/*.ts'],
+  migrationsRun: false,
   synchronize: false,
   logging: true,
 })
