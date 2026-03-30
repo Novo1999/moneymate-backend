@@ -1,0 +1,14 @@
+name: Keep Server Alive
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping server
+        run: curl -s https://moneymate-backend-tau.vercel.app/api/v1/keepAlive > /dev/null
