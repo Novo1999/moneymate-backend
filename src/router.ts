@@ -1,6 +1,7 @@
-import { Express, Request, Response, Router } from 'express'
+import { Express, Response, Router } from 'express'
 import { addUserAccountType, deleteUserAccountType, editUserAccountType, getUserAccountType, getUserAccountTypes, transferBalance } from './controllers/accountType.controller'
 import { addUserCategory, deleteUserCategory, editUserCategory, getUserCategories } from './controllers/category.controller'
+import { keepAlive } from './controllers/keepalive.controller'
 import { refreshAccessToken } from './controllers/refreshToken.controller'
 import {
   addTransaction,
@@ -70,5 +71,11 @@ const accountTypeRouterSetup = (app: Express) => {
   )
 }
 
-const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup, accountTypeRouterSetup }
+const keepAliveRouterSetup = (app: Express) => {
+  const keepAliveRouter = Router()
+
+  app.use('/api/v1/keepAlive', keepAliveRouter.get('/', keepAlive))
+}
+
+const routers = { routerSetup, transactionRouterSetup, userRouterSetup, categoryRouterSetup, accountTypeRouterSetup, keepAliveRouterSetup }
 export default routers
