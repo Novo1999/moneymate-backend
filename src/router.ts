@@ -13,7 +13,7 @@ import {
   getUserTransactionsInfo,
   getUserTransactionsPaginated,
 } from './controllers/transaction.controller'
-import { getUser, login, logout, patchUserData, signUp } from './controllers/user.controller'
+import { getUser, googleAuth, login, logout, patchUserData, signUp } from './controllers/user.controller'
 import { ExtendedRequest, verifyToken } from './middleware/authMiddleware'
 import { checkIdExists, validateGetUserTransactions } from './middleware/validationMiddleware'
 
@@ -24,7 +24,7 @@ const routerSetup = (app: Express) =>
 
 const userRouterSetup = (app: Express) => {
   const userRouter = Router()
-  ;(app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.get('/me', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData)),
+  ;(app.use('/api/v1/auth', userRouter.post('/signUp', signUp), userRouter.post('/login', login), userRouter.post('/google', googleAuth), userRouter.get('/me', verifyToken, getUser), userRouter.patch('/user/:id', patchUserData)),
     userRouter.post('/logout', logout))
   userRouter.post('/refreshToken', refreshAccessToken)
 }

@@ -1,13 +1,37 @@
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { Request, Response } from 'express'
+import { OAuth2Client } from 'google-auth-library'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
+import { AccountType } from '../database/postgresql/entity/accountType.entity'
 import { RefreshToken } from '../database/postgresql/entity/refreshtoken.entity'
 import { User } from '../database/postgresql/entity/user.entity'
 import { useTypeORM } from '../database/postgresql/typeorm'
 import createErrorResponse from '../util/createErrorResponse'
 import createJsonResponse from '../util/createJsonResponse'
 import { RequestWithUser } from '../util/interfaces'
+
+// Accepts one or more comma-separated client IDs (web + iOS) to validate the token audience.
+const GOOGLE_CLIENT_IDS = (process.env.GOOGLE_CLIENT_ID || '')
+  .split(',')
+  .map((id) => id.trim())
+  .filter(Boolean)
+const googleClient = new OAuth2Client()
+
+// Issues an access + refresh token pair for a user and persists the refresh token (same as login).
+const issueSession = async (user: User) => {
+  const refreshTokenDataSource = useTypeORM(RefreshToken)
+  const payload = { email: user.email, id: user.id, name: user.name }
+  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' })
+  const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' })
+
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 7)
+  await refreshTokenDataSource.insert({ user, expiresAt, revokedAt: null, token: refreshToken })
+
+  return { accessToken, refreshToken }
+}
 
 export const signUp = async (req: Request, res: Response) => {
   try {
@@ -152,6 +176,83 @@ export const getUser = async (req: RequestWithUser, res: Response) => {
     return createJsonResponse(res, {
       msg: 'Error getting user',
       status: StatusCodes.UNAUTHORIZED,
+    })
+  }
+}
+
+// Native Google sign-in: the mobile app sends the Google `idToken` obtained from
+// @react-native-google-signin. We verify it, find-or-create the user, and return the
+// same token payload as `login`.
+export const googleAuth = async (req: Request, res: Response) => {
+  try {
+    const { idToken } = req.body
+
+    if (!idToken) {
+      return createJsonResponse(res, { msg: 'idToken is required', status: StatusCodes.BAD_REQUEST })
+    }
+    if (GOOGLE_CLIENT_IDS.length === 0) {
+      return createJsonResponse(res, { msg: 'Google sign-in is not configured on the server', status: StatusCodes.INTERNAL_SERVER_ERROR })
+    }
+
+    const ticket = await googleClient.verifyIdToken({ idToken, audience: GOOGLE_CLIENT_IDS })
+    const payload = ticket.getPayload()
+
+    if (!payload?.email) {
+      return createJsonResponse(res, { msg: 'Invalid Google credentials', status: StatusCodes.UNAUTHORIZED })
+    }
+
+    const userRepository = useTypeORM(User)
+    const accountTypeRepository = useTypeORM(AccountType)
+
+    let user = await userRepository.findOneBy({ email: payload.email })
+
+    // First-time Google user: provision an account with a random password + default "Cash" account.
+    if (!user) {
+      const randomPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10)
+      const inserted = await userRepository
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({ email: payload.email, name: payload.name || payload.email.split('@')[0], password: randomPassword, currency: 'USD' as never })
+        .returning('*')
+        .execute()
+
+      user = (await userRepository.findOneBy({ email: payload.email }))!
+
+      const account = await accountTypeRepository
+        .createQueryBuilder()
+        .insert()
+        .into(AccountType)
+        .values({ name: 'Cash', balance: 0, user } as never)
+        .returning('*')
+        .execute()
+
+      const accountId = account.generatedMaps[0]?.id
+      if (accountId) {
+        await userRepository.update({ id: user.id }, { activeAccountTypeId: accountId })
+        user.activeAccountTypeId = accountId
+      }
+      void inserted
+    }
+
+    const { accessToken, refreshToken } = await issueSession(user)
+
+    return createJsonResponse(res, {
+      msg: 'Logged In',
+      data: {
+        email: user.email,
+        currency: user.currency,
+        id: user.id,
+        accessToken,
+        refreshToken,
+      },
+      status: StatusCodes.OK,
+    })
+  } catch (error) {
+    return createErrorResponse(res, {
+      msg: error instanceof Error ? error.message : 'Google sign-in failed',
+      status: StatusCodes.UNAUTHORIZED,
+      error,
     })
   }
 }

@@ -52,7 +52,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         id: refreshToken.user.id,
         name: refreshToken.user.name,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || '',
       { expiresIn: '15m' },
     )
     const newRefreshToken = jwt.sign(
@@ -61,7 +61,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
         id: refreshToken.user.id,
         name: refreshToken.user.name,
       },
-      process.env.JWT_REFRESH_SECRET,
+      process.env.JWT_REFRESH_SECRET || '',
       { expiresIn: '7d' },
     )
 
