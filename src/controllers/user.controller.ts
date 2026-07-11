@@ -23,8 +23,8 @@ const googleClient = new OAuth2Client()
 const issueSession = async (user: User) => {
   const refreshTokenDataSource = useTypeORM(RefreshToken)
   const payload = { email: user.email, id: user.id, name: user.name }
-  const accessToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '15m' })
-  const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' })
+  const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, { expiresIn: '15m' })
+  const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, { expiresIn: '7d' })
 
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 7)
@@ -86,9 +86,9 @@ export const login = async (req: Request, res: Response) => {
 
     if (!isPasswordValid) return createJsonResponse(res, { msg: 'Please Enter Correct Password.', status: StatusCodes.BAD_REQUEST })
 
-    const refreshToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' })
+    const refreshToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_REFRESH_SECRET!, { expiresIn: '7d' })
 
-    const accessToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_SECRET, { expiresIn: '15m' })
+    const accessToken = jwt.sign({ email, id: user.id, name: user.name }, process.env.JWT_SECRET!, { expiresIn: '15m' })
 
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
