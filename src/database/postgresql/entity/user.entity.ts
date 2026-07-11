@@ -45,4 +45,7 @@ export class User {
 
   @Column({ nullable: true })
   activeAccountTypeId: number
+
+  @Column({ nullable: true })
+  avatarUrl: string
 }
